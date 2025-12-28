@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-12-28T10:00:00Z",
+  "totalEntries": 0,
+  "categories": {
+    "issues": [],
+    "resolutions": [],
+    "sops": [],
+    "user_preferences": {},
+    "system_context": {
+      "project_name": "AI Issue Tracker",
+      "current_date": "2025-12-28",
+      "active_users": [],
+      "categories": [
+        "Authentication",
+        "Database",
+        "API",
+        "UI/Frontend",
+        "Performance",
+        "Security",
+        "Infrastructure",
+        "DevOps"
+      ],
+      "common_symptoms": [
+        "Error message: invalid credentials",
+        "Page reloads after submission",
+        "Slow load times",
+        "Memory leaks",
+        "Database connection timeout",
+        "API rate limit exceeded",
+        "Broken UI components",
+        "Failed authentication",
+        "Permission denied errors",
+        "Service unavailable"
+      ],
+      "resolution_templates": {
+        "quick_restart": "Restart affected service",
+        "clear_cache": "Clear application and database cache",
+        "check_logs": "Review application and service logs",
+        "verify_config": "Verify configuration files",
+        "rollback": "Revert to last known good state"
+      }
+    }
+  }
+}

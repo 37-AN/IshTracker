@@ -1,0 +1,21 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "ai-service",
+      "dependencies": {
+        "@hono/node-server": "^1.5.0",
+        "hono": "^4.0.0",
+        "z-ai-web-dev-sdk": "^0.0.15",
+      },
+    },
+  },
+  "packages": {
+    "@hono/node-server": ["@hono/node-server@1.19.7", "", { "peerDependencies": { "hono": "^4" } }, "sha512-vUcD0uauS7EU2caukW8z5lJKtoGMokxNbJtBiwHgpqxEXokaHCBkQUmCHhjFB1VUTWdqj25QoMkMKzgjq+uhrw=="],
+
+    "hono": ["hono@4.11.3", "", {}, "sha512-PmQi306+M/ct/m5s66Hrg+adPnkD5jiO6IjA7WhWw0gSBSo1EcRegwuI1deZ+wd5pzCGynCcn2DprnE4/yEV4w=="],
+
+    "z-ai-web-dev-sdk": ["z-ai-web-dev-sdk@0.0.15", "", { "bin": { "z-ai": "dist/cli.js", "z-ai-generate": "dist/cli.js" } }, "sha512-e1Lk8q7Z5BJcXlTIFv+jAMaOF4TxJv5Ex5zY1lLVh1ee6USQAHBojV6GdwCK6gJTAjXcARMFNQzcHXfX62a5Vg=="],
+  }
+}

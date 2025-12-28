@@ -1,0 +1,250 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  ENGINEER
+  VIEWER
+}
+
+enum IssueStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum IssuePriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      UserRole @default(VIEWER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  issues            Issue[]            @relation("AssignedIssues")
+  createdIssues     Issue[]            @relation("CreatedIssues")
+  ratings           Rating[]
+  auditLogs         AuditLog[]
+  externalSyncs     ExternalSync[]
+  comments          IssueComment[]
+}
+
+model Issue {
+  id               String         @id @default(cuid())
+  title            String
+  description      String
+  status           IssueStatus    @default(OPEN)
+  priority         IssuePriority  @default(MEDIUM)
+  category         String?
+  assignedToId     String?
+  createdById      String
+  externalSource   String?        // "github", "jira", "servicenow"
+  externalId       String?        // External ticket ID
+  resolvedAt       DateTime?
+  resolution       String?
+  symptoms         String?        // Problem symptoms
+  rootCause        String?        // Identified root cause
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  assignedTo       User?          @relation("AssignedIssues", fields: [assignedToId], references: [id], onDelete: SetNull)
+  createdBy        User           @relation("CreatedIssues", fields: [createdById], references: [id])
+  embeddings       Embedding[]
+  recommendations  AIRecommendation[]
+  ratings          Rating[]
+  comments         IssueComment[]
+  metrics          IssueMetric[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([assignedToId])
+  @@index([createdById])
+  @@index([externalSource, externalId])
+}
+
+model IssueComment {
+  id        String   @id @default(cuid())
+  content   String
+  issueId   String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([issueId])
+  @@index([userId])
+}
+
+model SOP {
+  id          String   @id @default(cuid())
+  title       String
+  problem     String
+  symptoms    String
+  cause       String
+  steps       String   // JSON array of steps
+  validation  String   // How to verify the fix
+  rollback    String   // How to rollback if needed
+  category    String
+  version     Int      @default(1)
+  active      Boolean  @default(true)
+  issueId     String?  // Link to source issue
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  embeddings  Embedding[]
+  relatedSOPs RelatedSOP[] @relation("SOPSource")
+  relatedFrom RelatedSOP[] @relation("SOPTarget")
+
+  @@index([category])
+  @@index([active])
+  @@index([issueId])
+}
+
+model RelatedSOP {
+  id         String @id @default(cuid())
+  sourceId   String
+  targetId   String
+  similarity Float
+  createdAt  DateTime @default(now())
+
+  source     SOP    @relation("SOPSource", fields: [sourceId], references: [id], onDelete: Cascade)
+  target     SOP    @relation("SOPTarget", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceId, targetId])
+  @@index([sourceId])
+  @@index([targetId])
+}
+
+model Embedding {
+  id        String   @id @default(cuid())
+  content   String   // The text that was embedded
+  vector    String   // JSON array of floats
+  issueId   String?
+  sopId     String?
+  createdAt DateTime @default(now())
+
+  issue     Issue?   @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  sop       SOP?     @relation(fields: [sopId], references: [id], onDelete: Cascade)
+
+  @@index([issueId])
+  @@index([sopId])
+}
+
+model AIRecommendation {
+  id               String   @id @default(cuid())
+  issueId          String
+  recommendation   String
+  confidence       Float
+  reasoning        String?   // Explanation of the recommendation
+  context          String?   // Similar issues or references
+  similarIssueIds  String?   // JSON array of similar issue IDs
+  accepted         Boolean?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  issue            Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  ratings          Rating[]
+
+  @@index([issueId])
+  @@index([accepted])
+}
+
+model Rating {
+  id               String   @id @default(cuid())
+  score            Int      // 1-5 stars
+  feedback         String?
+  issueId          String?
+  recommendationId String?
+  userId           String
+  createdAt        DateTime @default(now())
+
+  issue            Issue?            @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  recommendation   AIRecommendation? @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([issueId])
+  @@index([recommendationId])
+  @@index([userId])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String
+  action      String   // "issue_created", "issue_updated", "sop_created", etc.
+  resource    String   // "issue", "sop", "recommendation"
+  resourceId  String?
+  changes     String?  // JSON string of changes
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([resource, resourceId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model IssueMetric {
+  id            String   @id @default(cuid())
+  issueId       String
+  name          String   // e.g., "resolution_time", "ai_confidence"
+  value         Float
+  unit          String?  // e.g., "seconds", "percentage"
+  timestamp     DateTime @default(now())
+
+  issue         Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@index([issueId])
+  @@index([name])
+  @@index([timestamp])
+}
+
+model ExternalSync {
+  id          String   @id @default(cuid())
+  source      String   // "github", "jira", "servicenow"
+  config      String   // JSON config (API keys, URLs, etc.)
+  enabled     Boolean  @default(false)
+  lastSyncAt  DateTime?
+  syncStatus  String   // "success", "error", "in_progress"
+  errorDetails String?
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([source])
+  @@index([enabled])
+}
+
+// Clean up old models
+// model Post {
+//   id        String   @id @default(cuid())
+//   title     String
+//   content   String?
+//   published Boolean  @default(false)
+//   authorId  String
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
