@@ -238,6 +238,15 @@ model ExternalSync {
   @@index([enabled])
 }
 
+model HeuristicLog {
+  id          String   @id @default(cuid())
+  timestamp   DateTime @default(now())
+  domain      String   // MES, SQL, NETWORK
+  trigger     String   // The metric that hit a threshold
+  action      String   // The function executed
+  result      String   // Success/Failure
+}
+
 // Clean up old models
 // model Post {
 //   id        String   @id @default(cuid())
