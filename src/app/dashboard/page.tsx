@@ -1,26 +1,41 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { HealthCard } from '@/components/dashboard/HealthCard';
+import { SystemAnalytics } from '@/components/dashboard/SystemAnalytics';
+import { AutonomousLogicTrace } from '@/components/dashboard/AutonomousLogicTrace';
+import { HardwareHeatmap } from '@/components/dashboard/HardwareHeatmap';
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { 
-  LineChart, Line, AreaChart, Area, XAxis, YAxis, 
-  CartesianGrid, Tooltip, ResponsiveContainer 
-} from 'recharts';
-import { Activity, Database, Network, Cpu, AlertTriangle } from 'lucide-react';
-import { MetricCard } from "@/components/dashboard/MetricCard";
-
-// Mock data for the Heuristic Engine's state
-const oeeData = [
-  { time: '10:00', oee: 85, target: 90 },
-  { time: '11:00', oee: 78, target: 90 },
-  { time: '12:00', oee: 92, target: 90 },
-];
+import { Activity, Database, Network } from 'lucide-react';
+import { useAutonomousStore } from '@/store/useAutonomousStore';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 export default function AutonomousDashboard() {
+  const { health } = useAutonomousStore();
+
+  const mesSparklineData = [
+    { time: '09:00', value: 80 }, { time: '09:30', value: 85 }, { time: '10:00', value: 82 },
+    { time: '10:30', value: 78 }, { time: '11:00', value: 88 }, { time: '11:30', value: 90 },
+    { time: '12:00', value: 85 }, { time: '12:30', value: 79 }, { time: '13:00', value: 87 },
+  ];
+
+  const sqlSparklineData = [
+    { time: '09:00', value: 95 }, { time: '09:30', value: 92 }, { time: '10:00', value: 94 },
+    { time: '10:30', value: 90 }, { time: '11:00', value: 96 }, { time: '11:30', value: 93 },
+    { time: '12:00', value: 95 }, { time: '12:30', value: 91 }, { time: '13:00', value: 97 },
+  ];
+
+  const networkSparklineData = [
+    { time: '09:00', value: 70 }, { time: '09:30', value: 65 }, { time: '10:00', value: 40 },
+    { time: '10:30', value: 50 }, { time: '11:00', value: 30 }, { time: '11:30', value: 45 },
+    { time: '12:00', value: 55 }, { time: '12:30', value: 60 }, { time: '13:00', value: 42 },
+  ];
+
+
   return (
-    <div className="p-6 space-y-6 bg-slate-50 min-h-screen">
+    <div className="p-6 space-y-6 bg-slate-900 text-white min-h-screen">
       {/* Header: System Health Summary */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold tracking-tight">System Sovereignty</h1>
         <div className="flex gap-4">
           <Badge variant="outline" className="bg-green-100 text-green-800">Coded AI: Active</Badge>
@@ -28,73 +43,68 @@ export default function AutonomousDashboard() {
         </div>
       </div>
 
-      {/* Row 1: Health Metrics */}
+      {/* Manual Overrides */}
+      <Card className="bg-slate-800 text-white border-slate-700">
+        <CardHeader className="border-b border-slate-700">
+          <CardTitle className="text-sm">Manual Overrides</CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex items-center space-x-2">
+            <Switch id="mes-override" />
+            <Label htmlFor="mes-override">Override MES Autonomy</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Switch id="sql-override" />
+            <Label htmlFor="sql-override">Override SQL Autonomy</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Switch id="network-override" />
+            <Label htmlFor="network-override">Override Network Autonomy</Label>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Top Row: HealthCard components */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <MetricCard 
+        <HealthCard 
           title="MES (TrakSYS)" 
-          icon={<Activity className="w-5 h-5" />} 
-          score={88} 
-          rate="1.2 events/m"
-          status="Optimal"
+          icon={<Activity className="w-5 h-5 text-blue-400" />} 
+          score={health.mes.score} 
+          rate={`${health.mes.rate.toFixed(1)} events/m`}
+          status={health.mes.status.charAt(0).toUpperCase() + health.mes.status.slice(1) as any} // Capitalize first letter
+          data={mesSparklineData}
         />
-        <MetricCard 
+        <HealthCard 
           title="SQL Database" 
-          icon={<Database className="w-5 h-5" />} 
-          score={94} 
-          rate="0.4 events/m"
-          status="Optimal"
+          icon={<Database className="w-5 h-5 text-green-400" />} 
+          score={health.sql.score} 
+          rate={`${health.sql.rate.toFixed(1)} events/m`}
+          status={health.sql.status.charAt(0).toUpperCase() + health.sql.status.slice(1) as any}
+          data={sqlSparklineData}
         />
-        <MetricCard 
+        <HealthCard 
           title="Network (APs)" 
-          icon={<Network className="w-5 h-5" />} 
-          score={42} 
-          rate="8.5 events/m"
-          status="Critical"
+          icon={<Network className="w-5 h-5 text-red-400" />} 
+          score={health.network.score} 
+          rate={`${health.network.rate.toFixed(1)} events/m`}
+          status={health.network.status.charAt(0).toUpperCase() + health.network.status.slice(1) as any}
+          data={networkSparklineData}
         />
       </div>
 
-      {/* Row 2: Charts & Logic Trace */}
+      {/* Center Row: SystemAnalytics and AutonomousLogicTrace */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* TrakSYS OEE Trends */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">TrakSYS OEE Performance (Rate-Based)</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={oeeData}>
-                <defs>
-                  <linearGradient id="colorOee" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="time" />
-                <YAxis />
-                <Tooltip />
-                <Area type="monotone" dataKey="oee" stroke="#3b82f6" fillOpacity={1} fill="url(#colorOee)" />
-                <Line type="monotone" dataKey="target" stroke="#ef4444" strokeDasharray="5 5" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        <div className="lg:col-span-2">
+          <SystemAnalytics />
+        </div>
+        <div>
+          <AutonomousLogicTrace />
+        </div>
+      </div>
 
-        {/* Live Logic Trace (Terminal View) */}
-        <Card className="bg-slate-900 text-slate-100">
-          <CardHeader className="border-b border-slate-800">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Cpu className="w-4 h-4" /> Logic Trace
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 font-mono text-xs space-y-2 overflow-y-auto max-h-[300px]">
-            <p className="text-green-400">[14:20:01] MES: Production rate within limits.</p>
-            <p className="text-blue-400">[14:20:05] SQL: Slow query detected (12s).</p>
-            <p className="text-yellow-400">[14:20:06] AI: Analyzing rate... 2/min. Threshold: 5.</p>
-            <p className="text-red-400">[14:20:10] NET: AP-Warehouse-04 Offline. Rate: 10/min.</p>
-            <p className="text-white font-bold bg-red-900/50 px-1">[14:20:11] ACTION: Triggering Port Reset on SW-01.</p>
-          </CardContent>
-        </Card>
+      {/* Bottom Row: HardwareHeatmap */}
+      <div>
+        <HardwareHeatmap />
       </div>
     </div>
   );
