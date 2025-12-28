@@ -181,23 +181,29 @@ export default function IssueTracker() {
                     New Issue
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Create New Issue</DialogTitle>
                     <DialogDescription>Describe the issue you are experiencing</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
-                    <div>
-                      <label className="text-sm font-medium mb-1">Title</label>
+                    <div className="grid grid-cols-[auto_1fr] items-center gap-4">
+                      <label htmlFor="title" className="text-right text-sm font-medium">
+                        Title
+                      </label>
                       <Input
+                        id="title"
                         placeholder="Brief summary of the issue"
                         value={newIssue.title}
                         onChange={(e) => setNewIssue({ ...newIssue, title: e.target.value })}
                       />
                     </div>
-                    <div>
-                      <label className="text-sm font-medium mb-1">Description</label>
+                    <div className="grid grid-cols-[auto_1fr] items-center gap-4">
+                      <label htmlFor="description" className="text-right text-sm font-medium">
+                        Description
+                      </label>
                       <Textarea
+                        id="description"
                         placeholder="Detailed description of the issue"
                         value={newIssue.description}
                         onChange={(e) => setNewIssue({ ...newIssue, description: e.target.value })}
@@ -205,10 +211,12 @@ export default function IssueTracker() {
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm font-medium mb-1">Priority</label>
+                      <div className="grid grid-cols-[auto_1fr] items-center gap-4">
+                        <label htmlFor="priority" className="text-right text-sm font-medium">
+                          Priority
+                        </label>
                         <Select value={newIssue.priority} onValueChange={(v: any) => setNewIssue({ ...newIssue, priority: v })}>
-                          <SelectTrigger>
+                          <SelectTrigger id="priority">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -219,18 +227,24 @@ export default function IssueTracker() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div>
-                        <label className="text-sm font-medium mb-1">Category</label>
+                      <div className="grid grid-cols-[auto_1fr] items-center gap-4">
+                        <label htmlFor="category" className="text-right text-sm font-medium">
+                          Category
+                        </label>
                         <Input
+                          id="category"
                           placeholder="e.g., Bug, Feature, Incident"
                           value={newIssue.category}
                           onChange={(e) => setNewIssue({ ...newIssue, category: e.target.value })}
                         />
                       </div>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium mb-1">Symptoms</label>
+                    <div className="grid grid-cols-[auto_1fr] items-center gap-4">
+                      <label htmlFor="symptoms" className="text-right text-sm font-medium">
+                        Symptoms
+                      </label>
                       <Textarea
+                        id="symptoms"
                         placeholder="What symptoms are you observing?"
                         value={newIssue.symptoms}
                         onChange={(e) => setNewIssue({ ...newIssue, symptoms: e.target.value })}
@@ -246,8 +260,8 @@ export default function IssueTracker() {
               </Dialog>
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-4">
+            <div className="flex flex-col">
+              <div className="space-y-4">
                 <div className="bg-white rounded-xl shadow-sm border border-neutral-200">
                   <div className="p-4 border-b border-neutral-200">
                     <h2 className="font-semibold text-neutral-900">Issues</h2>
@@ -290,8 +304,8 @@ export default function IssueTracker() {
               </div>
 
               {selectedIssue && (
-                <div className="space-y-4">
-                  <Card className="sticky top-24">
+                <div className="mt-6">
+                  <Card>
                     <CardHeader>
                       <CardTitle className="text-lg">{selectedIssue.title}</CardTitle>
                     </CardHeader>

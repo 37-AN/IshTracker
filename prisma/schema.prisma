@@ -247,6 +247,33 @@ model HeuristicLog {
   result      String   // Success/Failure
 }
 
+model SystemMetric {
+  id        String   @id @default(cuid())
+  domain    String   // "MES", "SQL", "NETWORK"
+  key       String   // e.g., "latency", "oee_score", "active_queries"
+  value     Float
+  timestamp DateTime @default(now())
+
+  @@index([domain, timestamp])
+}
+
+model AutonomousResolution {
+  id          String   @id @default(cuid())
+  timestamp   DateTime @default(now())
+  domain      String   // "MES", "SQL", "NETWORK"
+  trigger     String   // The specific logic that fired (e.g., "Rate > 5/min")
+  action      String   // The coded function executed (e.g., "POEPowerCycle")
+  outcome     String   // "SUCCESS", "FAILURE", or "PENDING"
+  notes       String?
+}
+
+model SystemHealth {
+  id        String   @id @default(cuid())
+  domain    String   @unique
+  score     Int      // 0-100
+  lastUpdate DateTime @updatedAt
+}
+
 // Clean up old models
 // model Post {
 //   id        String   @id @default(cuid())
